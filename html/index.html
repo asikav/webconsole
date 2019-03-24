@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebConsole</title>
+        <link rel="stylesheet" href="node_modules/xterm/dist/xterm.css" />
+        <script src="node_modules/xterm/dist/xterm.js"></script>
+        <script src="node_modules/xterm/dist//addons/attach/attach.js"></script>
+        <script src="node_modules/xterm/dist//addons/fit/fit.js"></script>
+        <style>
+            #terminal {
+                position: absolute;
+                top: 0; right: 0; bottom: 0; left: 0;
+                border: 15px solid orange
+                overflow: hidden;
+                width: 500px;
+                height: 100px; /* <- fixed height */
+                font-size: 16px;
+                line-height: 17px; /* <- initial line-height */
+        }
+        </style>
+    </head>
+    <body>
+        <div id="terminal" style="width: 100%; height: 100%"></div>
+        <script>
+            var c = new URL(window.location.href).searchParams.get("i");
+            console.log(c);
+            if (c == null)
+                c = 1;
+            var socket = new WebSocket("ws://127.0.0.1:8765/terminal/" + c);
+            Terminal.applyAddon(attach);
+            Terminal.applyAddon(fit);
+            var term = new Terminal();
+            term.attach(socket);
+            term.setOption('fontSize', 12);
+            term.open(document.getElementById('terminal'));
+            term.fit();
+            // term.resize(120, 50);
+            term.focus();
+
+            term.attachCustomKeyEventHandler(function (e) {
+                if (e.ctrlKey && e.shiftKey && (e.code == "KeyK"))
+                    term.clear();
+                // console.log(e);
+            });
+
+            window.onresize = function(event) {
+                term.fit();
+                console.log(event);
+                console.log(term.cols);
+                console.log(term.rows);
+            };
+        </script>
+    </body>
+</html>
